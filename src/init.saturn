@@ -1,0 +1,40 @@
+use { trait, impl, abstract } in std;
+
+@trait()
+class Result {
+  @abstract() fn unwrap(self) = 0;
+  @abstract() fn unwrap_err(self) = 0;
+  @abstract() fn is_err(self) = 0;
+  @abstract() fn is_ok(self) = 0;
+}
+
+let value_symbol = {};
+
+@impl(Result)
+class Ok {
+  fn new(value) = Ok { [value_symbol]: value };
+  fn unwrap(self) = self[value_symbol];
+  fn unwrap_err(self) = panic!("Attempting to unwrap error from Ok value");
+  fn is_err(self) = false;
+  fn is_ok(self) = true;
+}
+
+@impl(Result)
+class Err {
+  fn new(value) = Err { [value_symbol]: value };
+  fn unwrap(self) {
+    let e = self[value_symbol];
+    print(e);
+    if type(e) == "table" and type(e.to_string) == "function" {
+      panic!("Unwrap error! " ++ tostring(e.to_string(e)));
+    } else if e <> () {
+      panic!("Unwrap error! " ++ tostring(e));
+    }
+    panic!("Attempting to unwrap an Err value");
+  }
+  fn unwrap_err(self) = self[value_symbol];
+  fn is_err(self) = true;
+  fn is_ok(self) = false;
+}
+
+return { Ok: Ok.new, Err: Err.new, Result };
